@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4. Sınıf Matematik Macerası - Yazarak Çöz!</title>
+  
+  <!-- Tailwind CSS & Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            fredoka: ['Fredoka', 'sans-serif'],
+            nunito: ['Nunito', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              purple: '#6C5CE7',
+              lightPurple: '#A29BFE',
+              teal: '#00CEC9',
+              yellow: '#FDCB6E',
+              pink: '#FD79A8',
+              dark: '#2D3436',
+              bg: '#F0F3FF'
+            }
+          },
+          animation: {
+            bounceSlow: 'bounce 2s infinite',
+            pulseFast: 'pulse 1s infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: #F0F3FF;
+      touch-action: manipulation;
+    }
+    .font-title {
+      font-family: 'Fredoka', sans-serif;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #a29bfe;
+      border-radius: 10px;
+    }
+    /* Pattern overlay for progress track */
+    .bg-grid-pattern {
+      background-image: radial-gradient(#a29bfe 1.5px, transparent 1.5px);
+      background-size: 16px 16px;
+    }
+    /* Custom shadow styles */
+    .btn-3d {
+      box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.2);
+      transition: all 0.1s ease;
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between select-none">
+
+  <!-- HEADER -->
+  <header class="bg-gradient-to-r from-purple-600 via-indigo-600 to-teal-500 text-white shadow-lg p-4 sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md border border-white/30 text-2xl">
+          🚀
+        </div>
+        <div>
+          <h1 class="font-title text-xl md:text-2xl font-bold tracking-wide">Matematik Macerası</h1>
+          <p class="text-xs text-purple-200 hidden sm:block">4. Sınıf "Yazarak Çöz" Görevi</p>
+        </div>
+      </div>
+      
+      <!-- Stats / Scoreboard -->
+      <div class="flex items-center gap-3 md:gap-6 bg-black/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
+        <div class="flex items-center gap-1.5" title="Doğru Cevap">
+          <i class="fa-solid fa-star text-yellow-300 text-lg sm:text-xl"></i>
+          <span id="score-text" class="font-title font-bold text-base sm:text-lg">0 / 10</span>
+        </div>
+        <div class="h-6 w-px bg-white/30"></div>
+        <div class="flex items-center gap-1.5" title="Kazanılan Rozet">
+          <i class="fa-solid fa-trophy text-amber-300 text-lg sm:text-xl"></i>
+          <span id="badge-text" class="font-title font-bold text-xs sm:text-sm text-yellow-100">Çaylak</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl w-full mx-auto p-3 sm:p-5 flex-1 flex flex-col gap-5">
+    
+    <!-- PROGRESS MAP SECTION -->
+    <section class="bg-white rounded-3xl p-4 sm:p-6 shadow-xl border-2 border-indigo-100 relative overflow-hidden bg-grid-pattern">
+      <div class="flex justify-between items-center mb-3">
+        <span class="font-title text-indigo-900 font-bold text-sm sm:text-base flex items-center gap-2">
+          <i class="fa-solid fa-map-location-dot text-indigo-500"></i> Macera Haritası
+        </span>
+        <span id="progress-percent" class="text-xs sm:text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
+          İlerleme: %0
+        </span>
+      </div>
+
+      <!-- Node Track Container -->
+      <div class="relative py-6 px-2">
+        <!-- Connecting Line Background -->
+        <div class="absolute top-1/2 left-6 right-6 h-3 bg-slate-200 -translate-y-1/2 rounded-full overflow-hidden">
+          <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-teal-400 to-indigo-500 transition-all duration-500 ease-out w-0"></div>
+        </div>
+
+        <!-- Track Steps Nodes -->
+        <div id="nodes-container" class="relative z-10 flex justify-between items-center">
+          <!-- Dynamically generated nodes will appear here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- MAIN GAME PANEL (Question + Scratchpad) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      
+      <!-- LEFT COLUMN: QUESTION & OPTIONS (5 Cols on large screens) -->
+      <section class="lg:col-span-5 flex flex-col gap-4">
+        <!-- Question Box -->
+        <div class="bg-white rounded-3xl p-5 shadow-xl border-2 border-purple-100 flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span id="question-badge" class="bg-purple-100 text-purple-700 font-title font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                Soru 1
+              </span>
+              <span id="question-difficulty" class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <i class="fa-solid fa-leaf"></i> Kolay
+              </span>
+            </div>
+
+            <h2 id="question-text" class="text-base sm:text-lg font-bold text-slate-800 leading-relaxed min-h-[80px]">
+              Soru yükleniyor...
+            </h2>
+          </div>
+
+          <!-- Options Grid -->
+          <div id="options-container" class="grid grid-cols-1 gap-2.5 mt-4">
+            <!-- Options will be generated via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Hint / How to Solve Toggle Button -->
+        <div class="bg-amber-50 rounded-2xl p-3 border border-amber-200 flex items-center justify-between">
+          <div class="flex items-center gap-2.5 text-amber-900 text-xs sm:text-sm font-semibold">
+            <i class="fa-solid fa-lightbulb text-amber-500 text-lg animate-pulse"></i>
+            <span>Zorlandın mı? İpucuna göz at.</span>
+          </div>
+          <button id="hint-btn" onclick="toggleHint()" class="bg-amber-200 hover:bg-amber-300 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+            İpucu
+          </button>
+        </div>
+        <!-- Hint Box Collapse -->
+        <div id="hint-box" class="hidden bg-amber-100/80 rounded-2xl p-4 border border-amber-300 text-amber-900 text-xs sm:text-sm font-medium leading-relaxed">
+          <p id="hint-text"></p>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: MANDATORY SCRATCHPAD / CANVAS (7 Cols on large screens) -->
+      <section class="lg:col-span-7 flex flex-col">
+        <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-xl border-2 border-indigo-100 flex flex-col h-full">
+          
+          <!-- Scratchpad Header & Controls -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <div class="bg-teal-100 text-teal-700 p-2 rounded-xl">
+                <i class="fa-solid fa-pen-ruler"></i>
+              </div>
+              <div>
+                <h3 class="font-title font-bold text-sm sm:text-base text-slate-800">Yazarak Çöz Alanı</h3>
+                <p class="text-[11px] text-amber-600 font-bold flex items-center gap-1">
+                  <i class="fa-solid fa-circle-exclamation"></i> Cevaplamadan önce buraya işlem yapmalısın!
+                </p>
+              </div>
+            </div>
+
+            <!-- Drawing Tools Toolbar -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <!-- Colors -->
+              <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                <button onclick="setPenColor('#2D3436')" class="w-6 h-6 rounded-full bg-slate-800 border-2 border-white focus:ring-2 ring-purple-500" title="Siyah"></button>
+                <button onclick="setPenColor('#0984e3')" class="w-6 h-6 rounded-full bg-blue-500 border-2 border-white focus:ring-2 ring-purple-500" title="Mavi"></button>
+                <button onclick="setPenColor('#d63031')" class="w-6 h-6 rounded-full bg-red-500 border-2 border-white focus:ring-2 ring-purple-500" title="Kırmızı"></button>
+                <button onclick="setPenColor('#00b894')" class="w-6 h-6 rounded-full bg-emerald-500 border-2 border-white focus:ring-2 ring-purple-500" title="Yeşil"></button>
+              </div>
+
+              <!-- Tools -->
+              <button id="eraser-btn" onclick="toggleEraser()" class="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs font-bold transition-colors" title="Silgi">
+                <i class="fa-solid fa-eraser text-sm"></i>
+              </button>
+              <button onclick="clearCanvas()" class="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold transition-colors flex items-center gap-1" title="Temizle">
+                <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline">Temizle</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Canvas Drawing Surface -->
+          <div class="relative flex-1 min-h-[220px] sm:min-h-[280px] bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 overflow-hidden cursor-crosshair">
+            <canvas id="scratchpad" class="w-full h-full block touch-none"></canvas>
+
+            <!-- Watermark / Placeholder Text inside Canvas -->
+            <div id="canvas-placeholder" class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-slate-400 opacity-60 p-4 text-center">
+              <i class="fa-solid fa-pencil text-3xl mb-2 animate-bounce"></i>
+              <span class="text-xs sm:text-sm font-medium">İşlemlerini, karalamalarını buraya yazarak yap.</span>
+            </div>
+          </div>
+
+          <!-- Submit Answer Action Button -->
+          <div class="mt-4">
+            <button onclick="validateAndSubmit()" class="btn-3d w-full py-3.5 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-title font-bold text-base sm:text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2">
+              <span>Cevabı Gönder</span>
+              <i class="fa-solid fa-paper-plane text-sm"></i>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MODAL: WARNING MODAL (Appears if student tries to submit without drawing) -->
+  <div id="warning-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border-4 border-amber-400 transform scale-95 transition-all">
+      <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+        <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+      </div>
+      <h3 class="font-title text-xl font-bold text-slate-800 mb-2">Karalama Yapmadın!</h3>
+      <p class="text-slate-600 text-sm mb-6 leading-relaxed">
+        Kural gereği cevabı göndermeden önce ekrandaki <strong>Yazarak Çöz</strong> alanında işlemlerini ve karalamalarını yapmalısın.
+      </p>
+      <button onclick="closeModal('warning-modal')" class="btn-3d w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-title font-bold rounded-2xl">
+        Tamam, Anladım! ✍️
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: FEEDBACK MODAL (Correct / Wrong response popup) -->
+  <div id="feedback-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div id="feedback-card" class="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl transform scale-95 transition-all border-4">
+      <div id="feedback-icon-bg" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
+        <i id="feedback-icon" class="fa-solid"></i>
+      </div>
+      <h3 id="feedback-title" class="font-title text-2xl font-bold mb-2"></h3>
+      <p id="feedback-msg" class="text-slate-600 text-sm mb-6 leading-relaxed"></p>
+      <button id="feedback-btn" onclick="nextQuestion()" class="btn-3d w-full py-3.5 text-white font-title font-bold rounded-2xl text-base shadow-lg">
+        Sonraki Adıma Geç 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: FINAL VICTORY SCREEN -->
+  <div id="victory-modal" class="fixed inset-0 bg-gradient-to-br from-indigo-900/90 via-purple-900/90 to-teal-900/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center shadow-2xl border-4 border-yellow-400 relative">
+      <div class="text-5xl sm:text-6xl mb-3">🏆</div>
+      <h2 class="font-title text-2xl sm:text-3xl font-extrabold text-slate-800 mb-1">Tebrikler Şampiyon!</h2>
+      <p class="text-purple-600 font-bold text-sm mb-6">Matematik Macerasını Başarıyla Tamamladın!</p>
+
+      <!-- Stats Summary Grid -->
+      <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="bg-purple-50 p-4 rounded-2xl border border-purple-100">
+          <span class="text-xs text-purple-600 font-bold block">Toplam Doğru</span>
+          <span id="final-score" class="font-title text-2xl font-extrabold text-purple-800">0 / 10</span>
+        </div>
+        <div class="bg-teal-50 p-4 rounded-2xl border border-teal-100">
+          <span class="text-xs text-teal-600 font-bold block">Başarı Oranı</span>
+          <span id="final-accuracy" class="font-title text-2xl font-extrabold text-teal-800">%0</span>
+        </div>
+      </div>
+
+      <!-- Earned Badge Badge Container -->
+      <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 mb-6 flex items-center gap-3 text-left">
+        <div class="text-4xl text-amber-500">🥇</div>
+        <div>
+          <span class="text-xs text-amber-700 font-bold block">Unvanın:</span>
+          <span id="final-badge" class="font-title text-base font-extrabold text-amber-900">4. Sınıf Matematik Profesörü</span>
+        </div>
+      </div>
+
+      <button onclick="restartGame()" class="btn-3d w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-title font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2">
+        <i class="fa-solid fa-rotate-right"></i>
+        <span>Maceraya Yeniden Başla</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- AUDIO SYNTHESIZER (Web Audio API - No External Files Required) -->
+  <script>
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Play Sound Effect Utility
+    function playSound(type) {
+      try {
+        initAudio();
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'correct') {
+          // Cheerful chime (C5 -> E5 -> G5 -> C6)
+          const freqs = [523.25, 659.25, 783.99, 1046.50];
+          freqs.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.3);
+          });
+        } else if (type === 'wrong') {
+          // Low buzzing sound
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.exponentialRampToValueAtTime(110, now + 0.3);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'warning') {
+          // Double pop warning
+          [0, 0.12].forEach((delay) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, now + delay);
+            gain.gain.setValueAtTime(0.2, now + delay);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + delay);
+            osc.stop(now + delay + 0.1);
+          });
+        } else if (type === 'win') {
+          // Fanfare
+          const notes = [523.25, 659.25, 783.99, 1046.50, 880, 1046.50];
+          const times = [0, 0.12, 0.24, 0.36, 0.55, 0.7];
+          notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + times[idx]);
+            gain.gain.setValueAtTime(0.25, now + times[idx]);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + times[idx] + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + times[idx]);
+            osc.stop(now + times[idx] + 0.3);
+          });
+        }
+      } catch (e) {
+        console.log("Audio not supported or blocked");
+      }
+    }
+  </script>
+
+  <!-- GAME DATA & MAIN LOGIC -->
+  <script>
+    // 10 Curated 4th Grade Math Questions
+    const questions = [
+      {
+        id: 1,
+        difficulty: "Kolay",
+        question: '"458 912" sayısındaki 8 rakamının basamak değeri ile 5 rakamının basamak değerinin toplamı kaçtır?',
+        options: ["58 000", "50 800", "580", "500 800"],
+        correct: 0,
+        hint: "8 rakamı binler basamağında (8 000), 5 rakamı ise on binler basamağındadır (50 000). Bu ikisini topla!"
+      },
+      {
+        id: 2,
+        difficulty: "Kolay",
+        question: "Bir çiftlikte 2 345 koyun ve koyunlardan 1 120 fazla inek vardır. Çiftlikteki toplam hayvan sayısı kaçtır?",
+        options: ["3 465", "4 690", "5 810", "5 710"],
+        correct: 2,
+        hint: "Önce inek sayısını bul: 2345 + 1120. Sonra koyun ve inek sayılarını topla!"
+      },
+      {
+        id: 3,
+        difficulty: "Orta",
+        question: "Ali, 4 826 sayısını en yakın yüzlüğe, 1 372 sayısını en yakın onluğa yuvarlıyor. Bulduğu tahminî sayıların farkı kaçtır?",
+        options: ["3 430", "3 450", "3 400", "3 420"],
+        correct: 0,
+        hint: "4826 en yakın yüzlüğe -> 4800. 1372 en yakın onluğa -> 1370. Şimdi çıkarma yap: 4800 - 1370."
+      },
+      {
+        id: 4,
+        difficulty: "Orta",
+        question: "Bir okul gezisi için kişi başı bilet ücreti 45 TL'dir. Geziye 38 öğrenci katıldığına göre toplanan toplam bilet ücreti kaç TL'dir?",
+        options: ["1 610", "1 710", "1 810", "1 620"],
+        correct: 1,
+        hint: "Toplam ücret için 45 ile 38 sayılarını çarpmalısın (45 x 38)."
+      },
+      {
+        id: 5,
+        difficulty: "Orta",
+        question: "Bir bölme işleminde bölen 14, bölüm 25 ve kalan 9 ise bölünen sayı kaçtır?",
+        options: ["350", "359", "369", "341"],
+        correct: 1,
+        hint: "Bölünen = (Bölen x Bölüm) + Kalan. Yani (14 x 25) + 9 işlemini yap."
+      },
+      {
+        id: 6,
+        difficulty: "Kolay",
+        question: "60 sayısının 3/5'i (beşte üçü) kaçtır?",
+        options: ["12", "24", "36", "48"],
+        correct: 2,
+        hint: "Önce 60'ı 5'e böl (60 ÷ 5 = 12), çıkan sonucu 3 ile çarp (12 x 3)."
+      },
+      {
+        id: 7,
+        difficulty: "Orta",
+        question: "Bir pastanın önce 2/9'si, sonra 4/9'ü yendi. Geride pastanın kaçta kaçı kalmıştır?",
+        options: ["6/9", "3/9", "4/9", "5/9"],
+        correct: 1,
+        hint: "Yenilen toplam miktar: 2/9 + 4/9 = 6/9. Pastanın tamamı 9/9 olduğuna göre geriye 9/9 - 6/9 kalır."
+      },
+      {
+        id: 8,
+        difficulty: "Kolay",
+        question: "Saat 14:35'te başlayan bir çizgi film 1 saat 45 dakika sürmüştür. Film bittiğinde saat kaçtır?",
+        options: ["16:10", "16:20", "15:20", "16:30"],
+        correct: 1,
+        hint: "14:35 + 1:45 = 15 saat 80 dakika. 80 dakika = 1 saat 20 dakika olduğuna göre saati 16:20 olur."
+      },
+      {
+        id: 9,
+        difficulty: "Orta",
+        question: "Bir kenarı 12 cm olan karenin çevresi, kısa kenarı 8 cm olan bir dikdörtgenin çevresine eşittir. Dikdörtgenin uzun kenarı kaç cm'dir?",
+        options: ["16", "20", "24", "12"],
+        correct: 0,
+        hint: "Karenin çevresi = 12 x 4 = 48 cm. Dikdörtgenin kısa kenarları toplamı = 8 + 8 = 16 cm. Uzun kenarlar toplamı = 48 - 16 = 32 cm. Bir uzun kenar = 32 ÷ 2."
+      },
+      {
+        id: 10,
+        difficulty: "Kolay",
+        question: "Kilogram fiyatı 48 TL olan fındıktan 250 gram alan bir kişi kaç TL öder?",
+        options: ["12", "16", "24", "18"],
+        correct: 0,
+        hint: "1 kg = 1000 gramdır. 250 gram, 1 kilogramın 4'te biridir (1/4). Fiyatı 4'e bölmelisin: 48 ÷ 4."
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+    let selectedOptionIdx = null;
+    let score = 0;
+    let userDrawnPixelCount = 0;
+
+    // Canvas drawing variables
+    let canvas, ctx;
+    let isDrawing = false;
+    let penColor = '#2D3436';
+    let penSize = 3;
+    let isEraser = false;
+
+    window.onload = function() {
+      setupCanvas();
+      renderMapNodes();
+      loadQuestion(0);
+    };
+
+    function setupCanvas() {
+      canvas = document.getElementById('scratchpad');
+      ctx = canvas.getContext('2d');
+
+      // Adjust canvas resolution to parent size
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      // Event listeners for Mouse
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      // Event listeners for Touch Devices
+      canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+      canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing);
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      // Keep canvas resolution matched to display width/height
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      clearCanvas();
+    }
+
+    function startDrawing(e) {
+      initAudio();
+      isDrawing = true;
+      document.getElementById('canvas-placeholder').style.opacity = '0';
+      ctx.beginPath();
+      const pos = getPos(e);
+      ctx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      const pos = getPos(e);
+
+      ctx.lineWidth = isEraser ? 18 : penSize;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = isEraser ? '#F8FAFC' : penColor;
+
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+
+    function stopDrawing() {
+      if (isDrawing) {
+        ctx.closePath();
+        isDrawing = false;
+      }
+    }
+
+    function handleTouchStart(e) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const mouseEvent = new MouseEvent('mousedown', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+      canvas.dispatchEvent(mouseEvent);
+    }
+
+    function handleTouchMove(e) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const mouseEvent = new MouseEvent('mousemove', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+      canvas.dispatchEvent(mouseEvent);
+    }
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    function setPenColor(color) {
+      penColor = color;
+      isEraser = false;
+      document.getElementById('eraser-btn').classList.remove('bg-purple-200', 'text-purple-800');
+    }
+
+    function toggleEraser() {
+      isEraser = !isEraser;
+      const btn = document.getElementById('eraser-btn');
+      if (isEraser) {
+        btn.classList.add('bg-purple-200', 'text-purple-800');
+      } else {
+        btn.classList.remove('bg-purple-200', 'text-purple-800');
+      }
+    }
+
+    function clearCanvas() {
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      document.getElementById('canvas-placeholder').style.opacity = '0.6';
+    }
+
+    // MANDATORY Scratchpad Check Logic: Checks if user drew anything on canvas
+    function checkCanvasHasDrawing() {
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+      let nonZeroAlphaCount = 0;
+
+      // Scan pixels for opacity/color
+      for (let i = 3; i < data.length; i += 16) { // step by 16 for performance
+        if (data[i] > 0) {
+          nonZeroAlphaCount++;
+        }
+      }
+
+      // Minimum threshold pixel strokes required
+      return nonZeroAlphaCount > 30;
+    }
+
+    function renderMapNodes() {
+      const container = document.getElementById('nodes-container');
+      container.innerHTML = '';
+
+      questions.forEach((q, idx) => {
+        const node = document.createElement('div');
+        node.id = `node-${idx}`;
+        node.className = `relative flex flex-col items-center justify-center transition-all duration-300`;
+
+        let nodeBg = "bg-white border-4 border-slate-300 text-slate-400";
+        let iconHtml = `<span class="text-xs font-extrabold font-title">${idx + 1}</span>`;
+
+        if (idx < currentQuestionIdx) {
+          // Completed
+          nodeBg = "bg-emerald-500 border-4 border-emerald-200 text-white shadow-md";
+          iconHtml = `<i class="fa-solid fa-check text-xs"></i>`;
+        } else if (idx === currentQuestionIdx) {
+          // Active
+          nodeBg = "bg-gradient-to-r from-purple-500 to-indigo-600 border-4 border-yellow-300 text-white shadow-lg scale-125 animate-pulse";
+          iconHtml = `<span class="text-xs font-black font-title">🤖</span>`;
+        } else if (idx === questions.length - 1) {
+          // Final Treasure
+          nodeBg = "bg-amber-100 border-4 border-amber-400 text-amber-600";
+          iconHtml = `<i class="fa-solid fa-gift text-xs"></i>`;
+        }
+
+        node.innerHTML = `
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center ${nodeBg} transition-all">
+            ${iconHtml}
+          </div>
+        `;
+
+        container.appendChild(node);
+      });
+
+      // Update ProgressBar Fill %
+      const progressPercent = Math.round((currentQuestionIdx / questions.length) * 100);
+      document.getElementById('progress-bar-fill').style.width = `${progressPercent}%`;
+      document.getElementById('progress-percent').innerText = `İlerleme: %${progressPercent}`;
+    }
+
+    function loadQuestion(idx) {
+      selectedOptionIdx = null;
+      const q = questions[idx];
+
+      // Update question badges
+      document.getElementById('question-badge').innerText = `Soru ${q.id} / ${questions.length}`;
+      document.getElementById('question-difficulty').innerHTML = q.difficulty === 'Kolay' 
+        ? `<i class="fa-solid fa-leaf text-emerald-500"></i> Kolay` 
+        : `<i class="fa-solid fa-bolt text-amber-500"></i> Orta`;
+      document.getElementById('question-text').innerText = q.question;
+      document.getElementById('hint-text').innerText = q.hint;
+
+      // Close hint if open
+      document.getElementById('hint-box').classList.add('hidden');
+
+      // Options
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      const letters = ['A', 'B', 'C', 'D'];
+      q.options.forEach((opt, oIdx) => {
+        const btn = document.createElement('button');
+        btn.id = `opt-${oIdx}`;
+        btn.onclick = () => selectOption(oIdx);
+        btn.className = `w-full p-3 sm:p-4 rounded-2xl border-2 border-slate-200 hover:border-purple-300 bg-slate-50 hover:bg-purple-50/50 text-left flex items-center gap-3 transition-all font-semibold text-sm sm:text-base text-slate-700`;
+        btn.innerHTML = `
+          <span class="w-8 h-8 rounded-xl bg-white border border-slate-300 flex items-center justify-center font-title font-bold text-slate-500 text-xs sm:text-sm shadow-sm">
+            ${letters[oIdx]}
+          </span>
+          <span class="flex-1">${opt}</span>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+
+      // Clear scratchpad canvas for new question
+      clearCanvas();
+      renderMapNodes();
+    }
+
+    function selectOption(oIdx) {
+      initAudio();
+      selectedOptionIdx = oIdx;
+
+      // Reset style of all option buttons
+      questions[currentQuestionIdx].options.forEach((_, idx) => {
+        const btn = document.getElementById(`opt-${idx}`);
+        if (btn) {
+          btn.className = `w-full p-3 sm:p-4 rounded-2xl border-2 border-slate-200 hover:border-purple-300 bg-slate-50 text-left flex items-center gap-3 transition-all font-semibold text-sm sm:text-base text-slate-700`;
+          btn.children[0].className = `w-8 h-8 rounded-xl bg-white border border-slate-300 flex items-center justify-center font-title font-bold text-slate-500 text-xs sm:text-sm shadow-sm`;
+        }
+      });
+
+      // Highlight selected button
+      const selectedBtn = document.getElementById(`opt-${oIdx}`);
+      if (selectedBtn) {
+        selectedBtn.className = `w-full p-3 sm:p-4 rounded-2xl border-2 border-purple-600 bg-purple-100/70 text-purple-900 text-left flex items-center gap-3 transition-all font-bold text-sm sm:text-base shadow-sm ring-2 ring-purple-400`;
+        selectedBtn.children[0].className = `w-8 h-8 rounded-xl bg-purple-600 text-white font-title font-bold text-xs sm:text-sm shadow-sm`;
+      }
+    }
+
+    function toggleHint() {
+      initAudio();
+      const hintBox = document.getElementById('hint-box');
+      hintBox.classList.toggle('hidden');
+    }
+
+    function validateAndSubmit() {
+      initAudio();
+
+      // 1. Mandatory Rule Check: Did student select an option?
+      if (selectedOptionIdx === null) {
+        playSound('warning');
+        alertModal("Lütfen Önce Bir Seçenek İşaretle!", "Cevabını göndermeden önce doğru olduğunu düşündüğün şıkkı seçmelisin.");
+        return;
+      }
+
+      // 2. Mandatory Rule Check: Did student draw/scratch on canvas?
+      const hasDrawn = checkCanvasHasDrawing();
+      if (!hasDrawn) {
+        playSound('warning');
+        openModal('warning-modal');
+        return;
+      }
+
+      // 3. Process Answer
+      const q = questions[currentQuestionIdx];
+      const isCorrect = (selectedOptionIdx === q.correct);
+
+      const feedbackModal = document.getElementById('feedback-modal');
+      const feedbackCard = document.getElementById('feedback-card');
+      const feedbackIconBg = document.getElementById('feedback-icon-bg');
+      const feedbackIcon = document.getElementById('feedback-icon');
+      const feedbackTitle = document.getElementById('feedback-title');
+      const feedbackMsg = document.getElementById('feedback-msg');
+      const feedbackBtn = document.getElementById('feedback-btn');
+
+      if (isCorrect) {
+        score++;
+        playSound('correct');
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.7 }
+        });
+
+        feedbackCard.className = "bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl transform scale-100 transition-all border-4 border-emerald-400";
+        feedbackIconBg.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl bg-emerald-100 text-emerald-600";
+        feedbackIcon.className = "fa-solid fa-circle-check animate-bounce";
+        feedbackTitle.innerText = "Harika! Doğru Cevap 🎉";
+        feedbackTitle.className = "font-title text-2xl font-bold mb-2 text-emerald-700";
+        feedbackMsg.innerText = "Tebrikler! Soruyu başarıyla çözdün ve kahramanın bir adım ilerledi.";
+        feedbackBtn.className = "btn-3d w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-title font-bold rounded-2xl text-base shadow-lg";
+      } else {
+        playSound('wrong');
+        feedbackCard.className = "bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl transform scale-100 transition-all border-4 border-rose-400";
+        feedbackIconBg.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl bg-rose-100 text-rose-600";
+        feedbackIcon.className = "fa-solid fa-circle-xmark";
+        feedbackTitle.innerText = "Aah, Maalesef Yanlış!";
+        feedbackTitle.className = "font-title text-2xl font-bold mb-2 text-rose-700";
+        feedbackMsg.innerHTML = `Doğru cevap <strong>${q.options[q.correct]}</strong> olmalıydı.<br><span class="text-xs text-slate-500 mt-1 block">İpucunu inceleyerek tekrar deneyebilirsin!</span>`;
+        feedbackBtn.className = "btn-3d w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-title font-bold rounded-2xl text-base shadow-lg";
+      }
+
+      // Update Score Header
+      document.getElementById('score-text').innerText = `${score} / ${questions.length}`;
+      updateBadgeTitle();
+
+      openModal('feedback-modal');
+    }
+
+    function updateBadgeTitle() {
+      const badgeText = document.getElementById('badge-text');
+      if (score >= 9) badgeText.innerText = "Matematik Dâhisi";
+      else if (score >= 7) badgeText.innerText = "Uzman Çözücü";
+      else if (score >= 4) badgeText.innerText = "Maceracı";
+      else badgeText.innerText = "Çaylak";
+    }
+
+    function nextQuestion() {
+      closeModal('feedback-modal');
+      currentQuestionIdx++;
+
+      if (currentQuestionIdx < questions.length) {
+        loadQuestion(currentQuestionIdx);
+      } else {
+        // Game Completed!
+        showVictoryScreen();
+      }
+    }
+
+    function showVictoryScreen() {
+      playSound('win');
+      confetti({
+        particleCount: 120,
+        spread: 100,
+        origin: { y: 0.5 }
+      });
+
+      document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+      const accuracy = Math.round((score / questions.length) * 100);
+      document.getElementById('final-accuracy').innerText = `%${accuracy}`;
+      
+      let badge = "4. Sınıf Matematik Çaylağı";
+      if (accuracy >= 90) badge = "🏆 4. Sınıf Matematik Profesörü";
+      else if (accuracy >= 70) badge = "🌟 Matematik Uzmanı Yıldızı";
+      else if (accuracy >= 50) badge = "⚡ Azimli Matematik Maceracısı";
+
+      document.getElementById('final-badge').innerText = badge;
+      openModal('victory-modal');
+    }
+
+    function restartGame() {
+      closeModal('victory-modal');
+      currentQuestionIdx = 0;
+      score = 0;
+      document.getElementById('score-text').innerText = `0 / ${questions.length}`;
+      updateBadgeTitle();
+      loadQuestion(0);
+    }
+
+    // Modal Helpers
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function alertModal(title, msg) {
+      const modal = document.getElementById('warning-modal');
+      modal.querySelector('h3').innerText = title;
+      modal.querySelector('p').innerText = msg;
+      openModal('warning-modal');
+    }
+  </script>
+</body>
+</html>
